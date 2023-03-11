@@ -24,7 +24,7 @@ const AppTopbar = forwardRef((props, ref) => {
 				<a className="layout-topbar-logo">
 					<>
 						<img src={`${contextPath}/demo/images/logos/logos.png`} width="47.22px" height={'35px'} widt={'true'} alt="logo" />
-						<span>Abah Farm <span className="text-xs font-normal">CRM (V1)</span></span>
+						<span>Abah Farm <span className="text-xs font-normal">CMS (V1)</span></span>
 					</>
 				</a>
 			</Link>
@@ -46,12 +46,12 @@ const AppTopbar = forwardRef((props, ref) => {
 					<i className="pi pi-user"></i>
 					<span>Profile</span>
 				</button>
-				<Link href="/documentation">
+				{/* <Link href="/documentation">
 					<button type="button" className="p-link layout-topbar-button">
 						<i className="pi pi-cog"></i>
 						<span>Settings</span>
 					</button>
-				</Link>
+				</Link> */}
 			</div>
 		</div>
 	);

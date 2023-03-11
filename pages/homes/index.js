@@ -15,28 +15,14 @@ import { GrUserAdmin } from 'react-icons/gr';
 import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { CustomerService } from '../../demo/service/CustomerService';
+import Informasi from './widgets/Informasi';
 
-const lineData = {
-  labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
-  datasets: [
-    {
-      label: 'First Dataset',
-      data: [65, 59, 80, 81, 56, 55, 40],
-      fill: false,
-      backgroundColor: '#2f4860',
-      borderColor: '#2f4860',
-      tension: 0.4
-    },
-    {
-      label: 'Second Dataset',
-      data: [28, 48, 40, 19, 86, 27, 90],
-      fill: false,
-      backgroundColor: '#00bb7e',
-      borderColor: '#00bb7e',
-      tension: 0.4
-    }
-  ]
-};
+const informasiData = [
+  { id: 1, info: "Pembelian Sapi Limousin 2 Ekor", date: new Date(Date.now()).toString() },
+  { id: 2, info: "Pembelian Sapi Anak 6 Ekor", date: new Date(Date.now()).toString() },
+  { id: 3, info: "Vaksin Sapi Pmk", date: new Date(Date.now()).toString() },
+  { id: 4, info: "Penimbangan Bulanan", date: new Date(Date.now()).toString() },
+];
 
 const Homes = () => {
   const [products, setProducts] = useState(null);
@@ -48,9 +34,12 @@ const Homes = () => {
   const [DialogPlusNotif, setDialogPlusNotif] = useState(false);
   const [DialogMinusNotif, setDialogMinusNotif] = useState(false);
   const [customers3, setCustomers3] = useState([]);
+  const [infoData, setInfoData] = useState([]);
 
   const customerService = new CustomerService();
   const productService = new ProductService();
+
+
 
   const applyLightTheme = () => {
     const lineOptions = {
@@ -119,6 +108,7 @@ const Homes = () => {
   useEffect(() => {
     productService.getProductsSmall().then((data) => setProducts(data));
     customerService.getCustomersMedium().then((data) => setCustomers3(data));
+    setInfoData(informasiData);
   }, []);
 
   const headerTemplate = (data) => {
@@ -155,7 +145,7 @@ const Homes = () => {
   };
 
   const countryBodyTemplate = (rowData) => {
-    console.log(rowData.country, "rowData.country.code")
+    // console.log(rowData.country, "rowData.country.code")
     return (
       <React.Fragment>
         <img alt="flag" src={`${contextPath}/demo/images/flag/flag_placeholder.png`} className={`flag flag-${rowData.country.code}`} width={30} />
@@ -191,7 +181,7 @@ const Homes = () => {
 
   // KETIKA TRIGGER MENGHIDE DIALOG
   const onCloseMinusDialog = () => {
-    console.log("Berhasil Menghapus")
+    // console.log("Berhasil Menghapus")
     setDialogMinusNotif(false);
   };
   const dialogMinusFooter = <Button type="button" label="Hapus" onClick={onCloseMinusDialog} icon="pi pi-check" className="p-button-secondary" />;
@@ -361,14 +351,14 @@ const Homes = () => {
       </div>
 
       <div className="col-12 xl:col-6">
-        {/* CARD UNTUK NOTIFIKASI INFORMASI TERBARU */}
+        {/* CARD UNTUK INFORMASI INFORMASI TERBARU */}
         <div className="card">
           <div className="flex align-items-center justify-content-between mb-4">
-            <h5>Notif Informasi</h5>
+            <h5>Informasi</h5>
             <div>
-              {/* BUTTON DAN DIALOG INFORMASI UNTUK TAMBAH NOTIFIKASI BARU */}
+              {/* BUTTON DAN DIALOG INFORMASI UNTUK TAMBAH INFORMASI BARU */}
               <Button type="button" icon="pi pi-plus" className="p-button-rounded p-button-outlined mr-2" onClick={() => setDialogPlusNotif(true)} />
-              <Dialog header="Notifikasi Baru" visible={DialogPlusNotif} style={{ width: '30vw' }} modal footer={basicDialogFooter} onHide={() => setDialogPlusNotif(false)}>
+              <Dialog header="Informasi Baru" visible={DialogPlusNotif} style={{ width: '30vw' }} modal footer={basicDialogFooter} onHide={() => setDialogPlusNotif(false)}>
                 <div className="card p-fluid">
                   <div className="field grid">
                     <label htmlFor="title" className="col-12 mb-2 md:col-2 md:mb-0">
@@ -388,30 +378,30 @@ const Homes = () => {
                   </div>
                 </div>
               </Dialog>
-              {/* BUTTON DAN DIALOG INFORMASI UNTUK MENGAHPUS NOTIFIKASIS */}
+              {/* BUTTON DAN DIALOG INFORMASI UNTUK MENGAHPUS INFORMASIS */}
               <Button type="button" icon="pi pi-minus" className="p-button-rounded p-button-secondary p-button-outlined" onClick={() => setDialogMinusNotif(true)} />
-              <Dialog header="Notifikasi Baru" visible={DialogMinusNotif} style={{ width: '30vw' }} modal footer={dialogMinusFooter} onHide={() => setDialogMinusNotif(false)}>
+              <Dialog header="Hapus Informasi" visible={DialogMinusNotif} style={{ width: '30vw' }} modal footer={dialogMinusFooter} onHide={() => setDialogMinusNotif(false)}>
                 <div className="col-12">
                   {/* <div className="card"> */}
-                    <DataTable
-                      value={customers3}
-                      rowGroupMode="subheader"
-                      groupRowsBy="representative.name"
-                      sortMode="single"
-                      sortField="representative.name"
-                      sortOrder={1}
-                      scrollable
-                      scrollHeight="400px"
-                      rowGroupHeaderTemplate={headerTemplate}
-                      rowGroupFooterTemplate={footerTemplate}
-                      responsiveLayout="scroll"
-                    >
-                      <Column field="name" header="Name" style={{ minWidth: '200px' }}></Column>
-                      <Column field="country" header="Country" body={countryBodyTemplate} style={{ minWidth: '200px' }}></Column>
-                      <Column field="company" header="Company" style={{ minWidth: '200px' }}></Column>
-                      <Column field="status" header="Status" body={statusBodyTemplate} style={{ minWidth: '200px' }}></Column>
-                      <Column field="date" header="Date" style={{ minWidth: '200px' }}></Column>
-                    </DataTable>
+                  <DataTable
+                    value={customers3}
+                    rowGroupMode="subheader"
+                    groupRowsBy="representative.name"
+                    sortMode="single"
+                    sortField="representative.name"
+                    sortOrder={1}
+                    scrollable
+                    scrollHeight="400px"
+                    rowGroupHeaderTemplate={headerTemplate}
+                    rowGroupFooterTemplate={footerTemplate}
+                    responsiveLayout="scroll"
+                  >
+                    <Column field="name" header="Name" style={{ minWidth: '200px' }}></Column>
+                    <Column field="country" header="Country" body={countryBodyTemplate} style={{ minWidth: '200px' }}></Column>
+                    <Column field="company" header="Company" style={{ minWidth: '200px' }}></Column>
+                    <Column field="status" header="Status" body={statusBodyTemplate} style={{ minWidth: '200px' }}></Column>
+                    <Column field="date" header="Date" style={{ minWidth: '200px' }}></Column>
+                  </DataTable>
                   {/* </div> */}
                 </div>
               </Dialog>
@@ -419,54 +409,13 @@ const Homes = () => {
 
           </div>
 
+          {/* ISI BODY INFORMASI */}
           <span className="block text-600 font-medium mb-3">TODAY</span>
-          <ul className="p-0 mx-0 mt-0 mb-4 list-none">
-            <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-              <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                <i className="pi pi-dollar text-xl text-blue-500" />
-              </div>
-              <span className="text-900 line-height-3">
-                Richard Jones
-                <span className="text-700">
-                  {' '}
-                  has purchased a blue t-shirt for <span className="text-blue-500">79$</span>
-                </span>
-              </span>
-            </li>
-            <li className="flex align-items-center py-2">
-              <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-orange-100 border-circle mr-3 flex-shrink-0">
-                <i className="pi pi-download text-xl text-orange-500" />
-              </div>
-              <span className="text-700 line-height-3">
-                Your request for withdrawal of <span className="text-blue-500 font-medium">2500$</span> has been initiated.
-              </span>
-            </li>
-          </ul>
-
-          <span className="block text-600 font-medium mb-3">YESTERDAY</span>
-          <ul className="p-0 m-0 list-none">
-            <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-              <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-blue-100 border-circle mr-3 flex-shrink-0">
-                <i className="pi pi-dollar text-xl text-blue-500" />
-              </div>
-              <span className="text-900 line-height-3">
-                Keyser Wick
-                <span className="text-700">
-                  {' '}
-                  has purchased a black jacket for <span className="text-blue-500">59$</span>
-                </span>
-              </span>
-            </li>
-            <li className="flex align-items-center py-2 border-bottom-1 surface-border">
-              <div className="w-3rem h-3rem flex align-items-center justify-content-center bg-pink-100 border-circle mr-3 flex-shrink-0">
-                <i className="pi pi-question text-xl text-pink-500" />
-              </div>
-              <span className="text-900 line-height-3">
-                Jane Davis
-                <span className="text-700"> has posted a new questions about your product.</span>
-              </span>
-            </li>
-          </ul>
+          {infoData.map((data) => (
+            <div key={data.id}>
+              <Informasi info={data.info} date={data.date} />
+            </div>
+          ))}
         </div>
       </div>
 
