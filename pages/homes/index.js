@@ -6,6 +6,7 @@ import { DataTable } from 'primereact/datatable';
 import { Menu } from 'primereact/menu';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { ProductService } from '../../demo/service/ProductService';
+import { Toast } from 'primereact/toast';
 import { LayoutContext } from '../../layout/context/layoutcontext';
 import Link from 'next/link';
 import { FaUsers } from 'react-icons/fa';
@@ -16,12 +17,37 @@ import { Dialog } from 'primereact/dialog';
 import { InputText } from 'primereact/inputtext';
 import { CustomerService } from '../../demo/service/CustomerService';
 import Informasi from './widgets/Informasi';
+import moment from 'moment/moment';
+import 'moment/locale/id';
+moment.locale('id')
 
+let dates = moment().format("dddd, MMMM Do YYYY, h:mm:ss a");
 const informasiData = [
-  { id: 1, info: "Pembelian Sapi Limousin 2 Ekor", date: new Date(Date.now()).toString() },
-  { id: 2, info: "Pembelian Sapi Anak 6 Ekor", date: new Date(Date.now()).toString() },
-  { id: 3, info: "Vaksin Sapi Pmk", date: new Date(Date.now()).toString() },
-  { id: 4, info: "Penimbangan Bulanan", date: new Date(Date.now()).toString() },
+  { id: 1, info: "Pembelian Sapi Limousin 2 Ekor", date: dates },
+  { id: 2, info: "Pembelian Sapi Anak 6 Ekor", date: dates },
+  { id: 3, info: "Vaksin Sapi Pmk", date: dates },
+  { id: 4, info: "Penimbangan Bulanan", date: moment("3/14/2023", "MM/DD/YYYY").format("dddd, MMMM Do YYYY, h:mm:ss a") },
+  { id: 5, info: "Penjualan Bibit", date: moment("3/15/2023", "MM/DD/YYYY").format("dddd, MMMM Do YYYY, h:mm:ss a") },
+];
+
+const kalkulasiSapiTerjual = [
+  { id: 1, jenis: "Simental", level: "Super", count: 1 },
+  { id: 2, jenis: "Marlboro", level: "Super", count: 1 },
+  { id: 3, jenis: "Limousin", level: "Super", count: 1 },
+  { id: 4, jenis: "Simental", level: "Super", count: 1 },
+  { id: 5, jenis: "Simental", level: "Super", count: 1 },
+  { id: 6, jenis: "Marlboro", level: "Super", count: 1 },
+  { id: 7, jenis: "Pegon", level: "Premium", count: 1 },
+  { id: 8, jenis: "Brangus", level: "Basic", count: 1 },
+  { id: 9, jenis: "Simental", level: "Super", count: 1 },
+  { id: 10, jenis: "Brahman", level: "Super", count: 1 },
+  { id: 11, jenis: "Brahman", level: "Super", count: 1 },
+  { id: 12, jenis: "Pegon", level: "Premium", count: 1 },
+  { id: 13, jenis: "Pegon", level: "Premium", count: 1 },
+  { id: 14, jenis: "Brahman", level: "Super", count: 1 },
+  { id: 15, jenis: "Simental", level: "Super", count: 1 },
+  { id: 16, jenis: "Brahman", level: "Super", count: 1 },
+  { id: 17, jenis: "Limousin", level: "Super", count: 1 },
 ];
 
 const Homes = () => {
@@ -35,11 +61,11 @@ const Homes = () => {
   const [DialogMinusNotif, setDialogMinusNotif] = useState(false);
   const [customers3, setCustomers3] = useState([]);
   const [infoData, setInfoData] = useState([]);
+  const [kalJmlSapi, setKalJmlSapi] = useState([]);
+  const toast = useRef();
 
   const customerService = new CustomerService();
   const productService = new ProductService();
-
-
 
   const applyLightTheme = () => {
     const lineOptions = {
@@ -109,53 +135,42 @@ const Homes = () => {
     productService.getProductsSmall().then((data) => setProducts(data));
     customerService.getCustomersMedium().then((data) => setCustomers3(data));
     setInfoData(informasiData);
+    validateKalJmlSapi();
   }, []);
 
-  const headerTemplate = (data) => {
-    return (
-      <React.Fragment>
-        <img alt={data.representative.name} src={`${contextPath}/demo/images/avatar/${data.representative.image}`} width="32" style={{ verticalAlign: 'middle' }} />
-        <span className="font-bold ml-2">{data.representative.name}</span>
-      </React.Fragment>
-    );
-  };
-
-  const footerTemplate = (data) => {
-    console.log(data.representative, "data.respresentative")
-    return (
-      <React.Fragment>
-        <td colSpan="4" style={{ textAlign: 'right' }} className="text-bold pr-6">
-          Total Customers
-        </td>
-        <td>{calculateCustomerTotal(data.representative.name)}</td>
-      </React.Fragment>
-    );
-  };
-
-  const calculateCustomerTotal = (name) => {
-    let total = 0;
-    if (customers3) {
-      for (let customer of customers3) {
-        if (customer.representative.name === name) {
-          total++;
-        }
+  const validateKalJmlSapi = () => {
+    let data = kalkulasiSapiTerjual;
+    let hasilKal = [];
+    let helper = {};
+    let result = data.reduce(function (r, o) {
+      let key = o.jenis;
+      if (!helper[key]) {
+        helper[key] = Object.assign({}, o);
+        r.push(helper[key]);
+      } else {
+        helper[key].count++;
       }
+      return r;
+    }, []);
+
+    let sapiKal = 0;
+    let warna = "";
+    for (let i = 0; i < result.length; i++) {
+      sapiKal = 0;
+      warna = "";
+      if (result[i].count >= 1) {
+        sapiKal += Math.floor((result[i].count / result.length) * 100);
+        warna += sapiKal >= 88 ? "green" : sapiKal < 88 && sapiKal >= 70 ? "cyan" : sapiKal < 70 && sapiKal >= 50 ? "yellow" : "red";
+      }
+      hasilKal.push({
+        id: i + 1,
+        jenis: result[i].jenis,
+        count: result[i].count,
+        kalkulasi: sapiKal,
+        warna: warna,
+      });
     }
-    return total;
-  };
-
-  const countryBodyTemplate = (rowData) => {
-    // console.log(rowData.country, "rowData.country.code")
-    return (
-      <React.Fragment>
-        <img alt="flag" src={`${contextPath}/demo/images/flag/flag_placeholder.png`} className={`flag flag-${rowData.country.code}`} width={30} />
-        <span style={{ marginLeft: '.5em', verticalAlign: 'middle' }}>{rowData.country.name}</span>
-      </React.Fragment>
-    );
-  };
-
-  const statusBodyTemplate = (rowData) => {
-    return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
+    setKalJmlSapi(hasilKal);
   };
 
   useEffect(() => {
@@ -173,25 +188,58 @@ const Homes = () => {
   // KETIKA TRIGGER MENGHIDE DIALOG
   const onCloseDialog = () => {
     const getTile = document.querySelector('#title').value;
-    const getSubject = document.querySelector('#subject').value;
-    console.log(getTile, getSubject);
+    let newId = 0;
+    for (let i = 0; i < infoData.length; i++) {
+      if (infoData[i].id == infoData.length) {
+        newId = infoData.length + 1;
+      }
+    }
+    infoData.push({
+      id: newId,
+      info: getTile,
+      date: dates,
+    });
+    setInfoData(infoData);
     setDialogPlusNotif(false);
+    toast.current.show({ severity: 'success', summary: 'Berhasil', detail: 'Menambahkan Informasi Baru', life: 3000 });
   };
   const basicDialogFooter = <Button type="button" label="Tambah" onClick={onCloseDialog} icon="pi pi-check" className="p-button-secondary" />;
 
   // KETIKA TRIGGER MENGHIDE DIALOG
   const onCloseMinusDialog = () => {
-    // console.log("Berhasil Menghapus")
     setDialogMinusNotif(false);
   };
-  const dialogMinusFooter = <Button type="button" label="Hapus" onClick={onCloseMinusDialog} icon="pi pi-check" className="p-button-secondary" />;
+  const dialogMinusFooter = <Button type="button" label="Cancel" onClick={onCloseMinusDialog} icon="" className="p-button-secondary" />;
+
+  const actionBodyTable = (rowData) => {
+    return (
+      <React.Fragment>
+        <Button type="button" icon="pi pi-trash" className="p-button-danger" label="Hapus" onClick={() => hapusInformasi(rowData.id)} />
+      </React.Fragment>
+    )
+  };
+
+  const hapusInformasi = (id) => {
+    let idRemove = 0;
+    for (let i = 0; i < infoData.length; i++) {
+      if (infoData[i].id == id) {
+        idRemove = i;
+      }
+    }
+    if (idRemove > -1) {
+      infoData.splice(idRemove, 1);
+    }
+    setInfoData(infoData);
+    onCloseMinusDialog();
+    toast.current.show({ severity: 'success', summary: 'Berhasil', detail: 'Berhasil Menghapus Informasi', life: 3000 });
+  };
 
   return (
     <div className="grid">
       <div className="col-12">
         <div className="card">
           <p className="text-base text-500">
-            <FcDataProtection /> Selamat Datang Admin CRM Abah Farm{' '}
+            <FcDataProtection /> Selamat Datang Admin CMS Abah Farm{' '}
           </p>
           <p className="font-medium text-xl">Hamzah</p>
         </div>
@@ -356,51 +404,46 @@ const Homes = () => {
           <div className="flex align-items-center justify-content-between mb-4">
             <h5>Informasi</h5>
             <div>
-              {/* BUTTON DAN DIALOG INFORMASI UNTUK TAMBAH INFORMASI BARU */}
-              <Button type="button" icon="pi pi-plus" className="p-button-rounded p-button-outlined mr-2" onClick={() => setDialogPlusNotif(true)} />
+              <Toast ref={toast} />
+              <Button type="button" icon="pi pi-ellipsis-v" className="p-button-rounded p-button-text p-button-plain" onClick={(event) => menu2.current.toggle(event)} />
+              <Menu
+                ref={menu2}
+                popup
+                model={[
+                  { label: 'Tambah Baru', icon: 'pi pi-fw pi-plus', command: (e) => { setDialogPlusNotif(true) } },
+                  { label: 'Hapus Notif', icon: 'pi pi-fw pi-minus', command: (e) => { setDialogMinusNotif(true) } }
+                ]}
+              />
+              {/* DIALOG INFORMASI UNTUK TAMBAH INFORMASI BARU */}
               <Dialog header="Informasi Baru" visible={DialogPlusNotif} style={{ width: '30vw' }} modal footer={basicDialogFooter} onHide={() => setDialogPlusNotif(false)}>
                 <div className="card p-fluid">
                   <div className="field grid">
                     <label htmlFor="title" className="col-12 mb-2 md:col-2 md:mb-0">
-                      Judul
+                      Isi Info
                     </label>
                     <div className="col-12 md:col-10">
                       <InputText id="title" type="text" />
                     </div>
                   </div>
-                  <div className="field grid">
-                    <label htmlFor="subject" className="col-12 mb-2 md:col-2 md:mb-0">
-                      Isi Notif
-                    </label>
-                    <div className="col-12 md:col-10">
-                      <InputText id="subject" type="text" />
-                    </div>
-                  </div>
                 </div>
               </Dialog>
-              {/* BUTTON DAN DIALOG INFORMASI UNTUK MENGAHPUS INFORMASIS */}
-              <Button type="button" icon="pi pi-minus" className="p-button-rounded p-button-secondary p-button-outlined" onClick={() => setDialogMinusNotif(true)} />
-              <Dialog header="Hapus Informasi" visible={DialogMinusNotif} style={{ width: '30vw' }} modal footer={dialogMinusFooter} onHide={() => setDialogMinusNotif(false)}>
+              {/* DIALOG INFORMASI UNTUK MENGAHPUS INFORMASIS */}
+              <Dialog header="Hapus Informasi" visible={DialogMinusNotif} style={{ width: '50vw' }} modal footer={dialogMinusFooter} onHide={() => setDialogMinusNotif(false)}>
                 <div className="col-12">
                   {/* <div className="card"> */}
                   <DataTable
-                    value={customers3}
-                    rowGroupMode="subheader"
+                    value={infoData}
                     groupRowsBy="representative.name"
                     sortMode="single"
                     sortField="representative.name"
                     sortOrder={1}
                     scrollable
                     scrollHeight="400px"
-                    rowGroupHeaderTemplate={headerTemplate}
-                    rowGroupFooterTemplate={footerTemplate}
                     responsiveLayout="scroll"
                   >
-                    <Column field="name" header="Name" style={{ minWidth: '200px' }}></Column>
-                    <Column field="country" header="Country" body={countryBodyTemplate} style={{ minWidth: '200px' }}></Column>
-                    <Column field="company" header="Company" style={{ minWidth: '200px' }}></Column>
-                    <Column field="status" header="Status" body={statusBodyTemplate} style={{ minWidth: '200px' }}></Column>
+                    <Column field="info" header="Informasi" style={{ minWidth: '200px' }}></Column>
                     <Column field="date" header="Date" style={{ minWidth: '200px' }}></Column>
+                    <Column header="Action" body={actionBodyTable} style={{ minWidth: '100px' }}></Column>
                   </DataTable>
                   {/* </div> */}
                 </div>
@@ -408,14 +451,11 @@ const Homes = () => {
             </div>
 
           </div>
-
-          {/* ISI BODY INFORMASI */}
-          <span className="block text-600 font-medium mb-3">TODAY</span>
-          {infoData.map((data) => (
+          {infoData.length > 0 ? infoData.sort((a, b) => a.date > b.date ? 1 : -1).map((data) => (
             <div key={data.id}>
               <Informasi info={data.info} date={data.date} />
             </div>
-          ))}
+          )) : <span className="block text-500 font-medium mb-3 text-center">Data Informasi Tidak Ditemukan!</span>}
         </div>
       </div>
 
@@ -424,91 +464,22 @@ const Homes = () => {
         <div className="card">
           <div className="flex justify-content-between align-items-center mb-5">
             <h5>Jenis Sapi Banyak Terjual</h5>
-            <div>
-              <Button type="button" icon="pi pi-ellipsis-v" className="p-button-rounded p-button-text p-button-plain" onClick={(event) => menu1.current.toggle(event)} />
-              <Menu
-                ref={menu1}
-                popup
-                model={[
-                  { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-                  { label: 'Remove', icon: 'pi pi-fw pi-minus' }
-                ]}
-              />
-            </div>
           </div>
           <ul className="list-none p-0 m-0">
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                <div className="mt-1 text-600">Clothing</div>
-              </div>
-              <div className="mt-2 md:mt-0 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-orange-500 h-full" style={{ width: '50%' }} />
+            {kalJmlSapi.map((sapi) => (
+              <li key={sapi.id} className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
+                <div>
+                  <span className="text-900 font-medium mr-2 mb-1 md:mb-0">SAPI {sapi.jenis.toUpperCase()}</span>
+                  <div className="mt-1 text-600">Terjual {sapi.count} Sapi</div>
                 </div>
-                <span className="text-orange-500 ml-3 font-medium">%50</span>
-              </div>
-            </li>
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                <div className="mt-1 text-600">Accessories</div>
-              </div>
-              <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-cyan-500 h-full" style={{ width: '16%' }} />
+                <div className="mt-2 md:mt-0 flex align-items-center">
+                  <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
+                    <div className={"bg-" + `${sapi.warna}` + "-500 h-full"} style={{ width: `${sapi.kalkulasi}px` }} />
+                  </div>
+                  <span className="text-orange-500 ml-3 font-medium">{sapi.kalkulasi} %</span>
                 </div>
-                <span className="text-cyan-500 ml-3 font-medium">%16</span>
-              </div>
-            </li>
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                <div className="mt-1 text-600">Accessories</div>
-              </div>
-              <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-pink-500 h-full" style={{ width: '67%' }} />
-                </div>
-                <span className="text-pink-500 ml-3 font-medium">%67</span>
-              </div>
-            </li>
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                <div className="mt-1 text-600">Office</div>
-              </div>
-              <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-green-500 h-full" style={{ width: '35%' }} />
-                </div>
-                <span className="text-green-500 ml-3 font-medium">%35</span>
-              </div>
-            </li>
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                <div className="mt-1 text-600">Accessories</div>
-              </div>
-              <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-purple-500 h-full" style={{ width: '75%' }} />
-                </div>
-                <span className="text-purple-500 ml-3 font-medium">%75</span>
-              </div>
-            </li>
-            <li className="flex flex-column md:flex-row md:align-items-center md:justify-content-between mb-4">
-              <div>
-                <span className="text-900 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                <div className="mt-1 text-600">Clothing</div>
-              </div>
-              <div className="mt-2 md:mt-0 ml-0 md:ml-8 flex align-items-center">
-                <div className="surface-300 border-round overflow-hidden w-10rem lg:w-6rem" style={{ height: '8px' }}>
-                  <div className="bg-teal-500 h-full" style={{ width: '40%' }} />
-                </div>
-                <span className="text-teal-500 ml-3 font-medium">%40</span>
-              </div>
-            </li>
+              </li>
+            ))}
           </ul>
         </div>
 

@@ -24,7 +24,7 @@ const Informasi = (props) => {
             </span>
           </div>
           <div className="flex-column text-right text-sm text-400">
-            <span className="line-height-3">{props.date.toString()}</span>
+            <span className="line-height-3">{props.date}</span>
           </div>
         </div>
       </li>
