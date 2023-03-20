@@ -8,15 +8,19 @@ const FileDemo = () => {
         toast.current.show({ severity: 'info', summary: 'Success', detail: 'File Uploaded', life: 3000 });
     };
 
+    const test = (e) => {
+        console.log(e, "e")
+    }
+
     return (
         <div className="grid">
             <div className="col-12">
                 <div className="card">
                     <h5>Advanced</h5>
-                    <FileUpload name="demo[]" url="./upload.php" onUpload={onUpload} multiple accept="image/*" maxFileSize={1000000} />
+                    <FileUpload name="demo[]" url="./upload.php" onUpload={onUpload} multiple accept="image/*" maxFileSize={1000000} onSelect={(e) => test(e)} />
 
                     <h5>Basic</h5>
-                    <FileUpload mode="basic" name="demo[]" url="./upload.php" accept="image/*" maxFileSize={1000000} onUpload={onUpload} />
+                    <FileUpload mode="basic" name="demo[]" url="./../../public/upload.php" accept="image/*" maxFileSize={1000000} onUpload={onUpload}  />
                 </div>
             </div>
         </div>
