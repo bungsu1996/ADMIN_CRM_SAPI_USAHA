@@ -7,11 +7,13 @@ import { Toast } from 'primereact/toast'
 import React, { useEffect, useRef, useState } from 'react'
 import "./index.module.css";
 import { useRouter } from 'next/router'
-import UploadImage from "./../../templates/upload";
+import UploadImage from "../../templates/uploadImageProfile";
+import UploadImageKtp from '../../templates/uploadImageKTP'
 
 const MyProfile = () => {
   const router = useRouter();
   const toast = useRef();
+  const [roleProfile, setRoleProfile] = useState("");
   const [imageProfile, setImageProfile] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const [useId, setUseId] = useState("");
@@ -27,6 +29,10 @@ const MyProfile = () => {
   const [alamat, setAlamat] = useState("");
   const [roleCheck, setRoleCheck] = useState(1);
   const [adminStatus, setAdminStatus] = useState(1);
+  const [disabledSavePhoto, setDisabledSavePhoto] = useState(true);
+  const [photoKtp, setPhotoKtp] = useState(null);
+  const [photoKtpPreview, setPhotoKtpPreview] = useState(null);
+  const [disabledSaveKtp, setDisabledSaveKtp] = useState(true);
   const roleChecks = [
     { name: 'Users'.toUpperCase(), code: 0 },
     { name: 'Investors'.toUpperCase(), code: 1 },
@@ -50,6 +56,7 @@ const MyProfile = () => {
     setRt("03");
     setAlamat("Sekeloa Tengah");
     setKodePos("40132");
+    getRoleProfile();
   }, []);
 
   const changeRegex = (e) => {
@@ -67,32 +74,56 @@ const MyProfile = () => {
     }
   }
 
+  const getRoleProfile = () => {
+    let nameRole = roleChecks.filter((x) => {
+      return x.code == roleCheck
+    })
+    setRoleProfile(nameRole[0].name)
+  }
+
   const onImageUpload = (e) => {
     const file = e.target.files[0];
     setImageProfile(file)
     setImagePreview(URL.createObjectURL(file))
+    setDisabledSavePhoto(false);
+  }
+
+  const savePhoto = () => {
+    toast.current.show({ severity: 'success', summary: 'Berhasil', detail: 'Menyimpan Foto Profile Terbaru', life: 3000 });
+    setDisabledSavePhoto(true);
+  }
+
+  const onKtpUpload = (e) => {
+    const file = e.target.files[0];
+    setPhotoKtp(file)
+    setPhotoKtpPreview(URL.createObjectURL(file))
+    setDisabledSaveKtp(false);
+  }
+
+  const saveKtp = () => {
+    toast.current.show({ severity: 'success', summary: 'Berhasil', detail: 'Menyimpan Foto Ktp Terbaru', life: 3000 });
+    setDisabledSaveKtp(true);
   }
 
   const onSubmit = () => {
     console.log(imageProfile, "imageProfile")
+    console.log(photoKtp, "photoKtp")
   }
 
   return (
     <div className="grid">
       <Toast ref={toast} />
-      <div className="col-12" style={{ border: "1px solid" }}>
+      <div className="col-12">
         <div className="card">
-          <span className="text-3xl font-semibold">My Profile</span>
+          <span className="text-3xl font-semibold"><span className="text-3xl text-600 font-light">Selamat Datang Di Profile </span>{roleProfile}</span>
         </div>
       </div>
-      <div className='col-12' style={{ border: "1px solid" }}>
+      <div className='col-12'>
         <div className="card">
           {/* INI UNTUK FOTO PROFILE ADMIN */}
-          <div className="flex flex-column align-items-center justify-content-center h-22rem mb-3 py-2">
-            {/* <div className="border-circle w-14rem h-14rem bg-yellow-500 text-gray-900 font-bold flex align-items-center justify-content-center"> */}
-              {/* UNTUK FOTO PROFILE */}
-              <UploadImage onChange={(e) => onImageUpload(e)} img={imagePreview} />
-            {/* </div> */}
+          <div className="flex flex-column align-items-center justify-content-center h-25rem mb-3 py-2">
+            {/* UNTUK FOTO PROFILE */}
+            <UploadImage onChange={(e) => onImageUpload(e)} img={imagePreview} savePhoto={savePhoto} disabledPhoto={disabledSavePhoto} />
           </div>
           {/* FORM PARENT */}
           <div className="p-fluid formgrid grid">
@@ -161,10 +192,10 @@ const MyProfile = () => {
               <label htmlFor="alamat">Alamat Lengkap</label>
               <InputTextarea id="alamat" rows="4" value={alamat} />
             </div>
-            {/* FORM ALAMAT LENGKAP */}
+            {/* UPLOAD IMAGE KTP */}
             <div className="field col-12">
-              <label htmlFor="alamat">Upload KTP</label>
-              <InputTextarea id="alamat" rows="4" />
+              <p>Upload KTP <span className="font-medium text-red-500 mb-3">(*Kartu Identitas)</span></p>
+              <UploadImageKtp changeKtp={(e) => onKtpUpload(e)} img={photoKtpPreview} savePhoto={saveKtp} disabledPhoto={disabledSaveKtp} />
             </div>
             {/* BUTTON UNTUK ACTION FORM EDIT ATAU DETAIL */}
             <div className='field flex flex-row col-12 md:col-3 mx-auto'>
